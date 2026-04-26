@@ -10,7 +10,9 @@ export class AuthController extends BaseController {
     const useCase = container.resolve(LoginUseCase);
     const result = await useCase.execute(email, password);
 
-    if (result.isFailure) return this.unauthorized(res, result.error!);
+    if (result.isFailure) {
+      return this.unauthorized(res, result.error!);
+    }
 
     return this.ok(res, {
       token: result.value,

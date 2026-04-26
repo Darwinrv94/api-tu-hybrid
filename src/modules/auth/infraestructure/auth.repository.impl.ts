@@ -7,7 +7,9 @@ export class AuthRepositoryImpl implements AuthRepository {
       where: { correo: email },
     });
 
-    if (!user) return null;
+    if (!user) {
+      return null;
+    }
 
     return {
       id: user.id_usuario,

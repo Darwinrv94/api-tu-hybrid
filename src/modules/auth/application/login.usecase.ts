@@ -14,12 +14,16 @@ export class LoginUseCase {
   async execute(email: string, password: string): Promise<Result<string>> {
     const user = await this.repository.findByEmail(email);
 
-    if (!user) return Result.fail('Usuario no existe');
+    if (!user) {
+      return Result.fail('Usuario no existe');
+    }
 
     const normalizedHash = user.password.replace('$2y$', '$2b$');
     const valid = await bcrypt.compare(password, normalizedHash);
 
-    if (!valid) return Result.fail('Credenciales inválidas');
+    if (!valid) {
+      return Result.fail('Credenciales inválidas');
+    }
 
     //const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '8h' });
 
