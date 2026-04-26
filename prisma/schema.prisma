@@ -1181,8 +1181,8 @@ model usuarios {
   password_hash     String?         @db.VarChar(255)
   intentos_login    Int             @default(0)
   fecha_bloqueo     DateTime?       @db.DateTime(0)
-  nivel             Boolean
-  status            Boolean
+  nivel             Int             @db.TinyInt
+  status            Int             @db.TinyInt
   img_usuario       String          @db.VarChar(100)
   img_empresa       String          @db.VarChar(100)
   rutaPathEmpresa   String          @db.Text

@@ -1,10 +1,12 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { container } from 'tsyringe';
 import { LoginUseCase } from '@modules/auth/application/login.usecase';
 import { BaseController } from '@shared/core/base-controller';
+import { LoginDTOType } from '../application/dto/login.dto';
+import { TypedRequest } from '@shared/types/typed-request.type';
 
 export class AuthController extends BaseController {
-  async login(req: Request, res: Response) {
+  async login(req: TypedRequest<LoginDTOType>, res: Response) {
     const { email, password } = req.body;
 
     const useCase = container.resolve(LoginUseCase);
