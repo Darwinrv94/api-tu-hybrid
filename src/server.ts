@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import '@shared/bootstrap/openapi.bootstrap';
 import 'reflect-metadata';
 import '@shared/container';
 

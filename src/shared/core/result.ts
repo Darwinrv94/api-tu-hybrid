@@ -1,28 +1,21 @@
 export class Result<T> {
   public isSuccess: boolean;
   public isFailure: boolean;
-  public error?: string;
-  private _value?: T;
+  public error?: T;
+  public value?: T;
 
-  private constructor(isSuccess: boolean, error?: string, value?: T) {
+  private constructor(isSuccess: boolean, error?: T, value?: T) {
     this.isSuccess = isSuccess;
     this.isFailure = !isSuccess;
     this.error = error;
-    this._value = value;
+    this.value = value;
   }
 
-  public get value(): T {
-    if (!this.isSuccess) {
-      throw new Error('Cannot get value of a failed result');
-    }
-    return this._value as T;
+  static ok<T>(value: T) {
+    return new Result<T>(true, undefined, value);
   }
 
-  public static ok<U>(value: U): Result<U> {
-    return new Result<U>(true, undefined, value);
-  }
-
-  public static fail<U>(error: string): Result<U> {
-    return new Result<U>(false, error);
+  static fail<T>(error: T) {
+    return new Result<T>(false, error);
   }
 }

@@ -2,7 +2,8 @@ import { inject, injectable } from 'tsyringe';
 import { AuthRepository } from '@modules/auth/domain/auth.repository';
 import { Result } from '@shared/core/result';
 import bcrypt from 'bcrypt';
-import { AuthAccessState } from '../domain/enums/auth-access-state.enum';
+import { LoginResult } from '../domain/enums/login-result.enum';
+import { UserStatus } from '@modules/users/domain/enums/user-status.enum';
 //import jwt from 'jsonwebtoken';
 
 @injectable()
@@ -12,41 +13,31 @@ export class LoginUseCase {
     private repository: AuthRepository,
   ) {}
 
-  async execute(email: string, password: string): Promise<Result<string>> {
+  async execute(email: string, password: string): Promise<Result<LoginResult | string>> {
     const user = await this.repository.findByEmail(email);
 
     if (!user) {
-      return Result.fail('Credenciales inválidas');
+      return Result.fail(LoginResult.INVALID_CREDENTIALS);
     }
 
     const accessState = await this.repository.ensureUserCanAuthenticate(user);
 
-    if (accessState.value !== AuthAccessState.VALID) {
-      if (accessState.value === AuthAccessState.BLOCKED) {
-        return Result.fail(
-          'Usuario bloqueado por múltiples intentos fallidos. Intente nuevamente más tarde.',
-        );
-      }
+    if (accessState.value === UserStatus.INACTIVE) {
+      return Result.fail(LoginResult.USER_INACTIVE);
+    }
 
-      if (accessState.value === AuthAccessState.INACTIVE) {
-        return Result.fail('Credenciales inválidas');
-      }
-
-      return Result.fail('Credenciales inválidas');
+    if (accessState.value === UserStatus.BLOCKED) {
+      return Result.fail(LoginResult.USER_BLOCKED);
     }
 
     const normalizedHash = user.password.replace('$2y$', '$2b$');
     const valid = await bcrypt.compare(password, normalizedHash);
 
     if (!valid) {
-      // TODO: incrementar contador de intentos fallidos y bloquear si excede el límite
+      // TODO: incrementar intentos fallidos y bloquear si se alcanza el límite
 
-      return Result.fail('Credenciales inválidas');
+      return Result.fail(LoginResult.INVALID_CREDENTIALS);
     }
-
-    // TODO: resetear contador de intentos fallidos
-
-    //const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '8h' });
 
     return Result.ok(user.email);
   }
