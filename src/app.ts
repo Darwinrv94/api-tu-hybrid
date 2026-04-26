@@ -7,8 +7,6 @@ import { errorHandler } from '@shared/middlewares/error.middleware';
 import authRoutes from '@modules/auth/presentation/auth.routes';
 import { NOT_FOUND_ERROR_MESSAGE } from '@shared/constants/error-messages';
 
-const test = 'hola amigos';
-
 const app = express();
 
 app.use(helmet());
