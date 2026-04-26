@@ -9,6 +9,7 @@ import { NOT_FOUND_ERROR_MESSAGE } from '@shared/constants/error-messages';
 import '@modules/auth/docs/auth.docs';
 import swaggerUi from 'swagger-ui-express';
 import { generateOpenAPIDocument } from '@config/openapi.config';
+import { env } from '@config/env';
 
 const app = express();
 
@@ -17,7 +18,7 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-if (process.env.NODE_ENV !== 'production') {
+if (env.NODE_ENV !== 'production') {
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(generateOpenAPIDocument()));
 }
 

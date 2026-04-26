@@ -3,6 +3,7 @@ import prisma from '@config/prisma';
 import { User } from '@modules/users/domain/user.entity';
 import { UserStatus } from '@modules/users/domain/enums/user-status.enum';
 import { Result } from '@shared/core/result';
+import { env } from '@config/env';
 
 export class AuthRepositoryImpl implements AuthRepository {
   async findByEmail(email: string): Promise<User | null> {
@@ -26,8 +27,8 @@ export class AuthRepositoryImpl implements AuthRepository {
   }
 
   async ensureUserCanAuthenticate(user: User): Promise<Result<UserStatus>> {
-    const maxAttempts = Number(process.env.INTENTOS_LOGIN);
-    const blockMinutes = Number(process.env.TIEMPO_BLOQUEO_LOGIN);
+    const maxAttempts = Number(env.INTENTOS_LOGIN);
+    const blockMinutes = Number(env.TIEMPO_BLOQUEO_LOGIN);
 
     if (user.status !== UserStatus.ACTIVE) {
       return Result.ok(UserStatus.INACTIVE);
