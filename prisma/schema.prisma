@@ -1,0 +1,1203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model archivo_licencia {
+  id_archivo           Int                  @id @default(autoincrement())
+  ruta_pin             String               @db.Text
+  ruta_pdf             String               @db.Text
+  id_asignacion        Int
+  asignacion_licencias asignacion_licencias @relation(fields: [id_asignacion], references: [id_asignacion], onDelete: Cascade, map: "archivo_licencia_ibfk_1")
+
+  @@index([id_asignacion], map: "id_asignacion")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model asesores {
+  id_asesor          Int                  @id @default(autoincrement())
+  nombre             String               @db.VarChar(70)
+  nombre_empresa     String               @db.VarChar(70)
+  pais               String               @db.VarChar(30)
+  ciudad             String               @db.VarChar(30)
+  prefijo            String               @db.VarChar(10)
+  numero             String               @db.VarChar(30)
+  cod_postal         Int
+  id_fiscal          String               @db.VarChar(30)
+  persona_contacto   String               @db.VarChar(70)
+  direccion_fiscal   String               @db.VarChar(200)
+  direccion_envio    String               @db.VarChar(200)
+  id_distribuidor    Int?
+  id_subdistribuidor Int?
+  id_usuario         Int
+  permitirEditar     Boolean              @default(false)
+  atencion_actividad atencion_actividad[]
+
+  @@index([id_distribuidor], map: "id_distribuidor")
+  @@index([id_distribuidor], map: "id_distribuidor_2")
+  @@index([id_subdistribuidor], map: "id_subdistribuidor")
+  @@index([id_usuario], map: "id_usuario")
+  @@index([id_usuario], map: "id_usuario_2")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model asignacion_licencias {
+  id_asignacion                 Int                @id @default(autoincrement())
+  producto                      String             @db.VarChar(200)
+  licencia                      String             @db.VarChar(200)
+  status                        Boolean
+  grupo                         Int
+  id_usuario                    Int
+  fecha_asignacion              DateTime?          @db.Timestamp(0)
+  tipo_documento                Int?
+  documento                     String?            @db.VarChar(50)
+  fecha_emision_doc             DateTime?          @db.Date
+  pais                          String             @db.VarChar(50)
+  cod_producto                  String             @db.VarChar(50)
+  fecha_personalizada_en_espera DateTime?          @db.Date
+  fecha_personalizada_asignada  DateTime?          @db.Date
+  detalle                       String?            @db.Text
+  archivo_licencia              archivo_licencia[]
+
+  @@index([id_usuario], map: "id_usuario")
+}
+
+model atencion_actividad {
+  id_atencion         Int                 @id @default(autoincrement())
+  fecha_atencion      DateTime            @default(now()) @db.Timestamp(0)
+  status              Int                 @db.TinyInt
+  pospuesta           Int
+  fecha_pos           DateTime?           @db.Timestamp(0)
+  tipo_atencion       Int                 @db.TinyInt
+  id_actividad        Int
+  id_cliente          Int
+  id_asesor           Int
+  solicitud_actividad solicitud_actividad @relation(fields: [id_actividad], references: [id_actividad], onDelete: NoAction, onUpdate: NoAction, map: "atencion_actividad_ibfk_1")
+  asesores            asesores            @relation(fields: [id_asesor], references: [id_asesor], onDelete: NoAction, onUpdate: NoAction, map: "atencion_actividad_ibfk_2")
+  cliente_final       cliente_final       @relation(fields: [id_cliente], references: [id_cliente_final], onDelete: NoAction, onUpdate: NoAction, map: "atencion_actividad_ibfk_3")
+
+  @@index([id_actividad], map: "id_actividad")
+  @@index([id_asesor], map: "id_asesor")
+  @@index([id_cliente], map: "id_cliente")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model cartas_forma_libre_cliente_final {
+  id               Int           @id @default(autoincrement())
+  ruta_archivo     String        @db.VarChar(500)
+  id_cliente_final Int
+  cliente_final    cliente_final @relation(fields: [id_cliente_final], references: [id_cliente_final], onDelete: NoAction, onUpdate: NoAction, map: "fk_carta_cliente_final")
+
+  @@index([id_cliente_final], map: "fk_carta_cliente_final")
+}
+
+model ciudades {
+  idCiudades    Int      @id @default(autoincrement())
+  Paises_Codigo String   @db.VarChar(2)
+  Ciudad        String   @db.VarChar(100)
+  latitud       Decimal? @db.Decimal(10, 8)
+  longitud      Decimal? @db.Decimal(11, 8)
+
+  @@index([Ciudad], map: "Ciudad")
+  @@index([Paises_Codigo], map: "Paises_Codigo")
+}
+
+model clasificacion_acta {
+  id_clasificacion Int      @id @default(autoincrement())
+  descripcion      String   @db.Text
+  fecha            DateTime @db.Date
+  id_usuario       Int?
+
+  @@index([id_usuario], map: "id_usuario")
+}
+
+model cliente {
+  id_cliente      Int    @id @default(autoincrement())
+  nombre          String @db.VarChar(70)
+  nombre_empresa  String @db.VarChar(70)
+  pais            String @db.VarChar(30)
+  ciudad          String @db.VarChar(30)
+  numero_contacto String @db.VarChar(20)
+  rama            String @db.VarChar(40)
+  id_facebook     Int?
+  id_escala       Int
+  id_usuario      Int
+
+  @@index([id_escala], map: "id_escala")
+  @@index([id_facebook], map: "id_facebook")
+  @@index([id_usuario], map: "id_usuario")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model cliente_final {
+  id_cliente_final                 Int                                @id @default(autoincrement())
+  nombre                           String                             @db.VarChar(70)
+  nombre_empresa                   String                             @db.VarChar(70)
+  pais                             String                             @db.VarChar(30)
+  ciudad                           String                             @db.VarChar(30)
+  prefijo                          String                             @db.VarChar(5)
+  numero_telefono                  String                             @db.VarChar(30)
+  numero_celular                   String                             @db.VarChar(30)
+  id_fiscal                        String                             @db.VarChar(20)
+  pagina                           String                             @db.VarChar(30)
+  correo                           String                             @db.VarChar(70)
+  direccion                        String                             @db.VarChar(200)
+  id_distribuidor                  Int?
+  id_subdistribuidor               Int?
+  id_usuario                       Int?
+  id_objeto_empresa                Int?
+  id_software_anterior             Int?
+  es_contribuyente_especial        Int?                               @db.TinyInt
+  atencion_actividad               atencion_actividad[]
+  cartas_forma_libre_cliente_final cartas_forma_libre_cliente_final[]
+  objetos_empresas                 objetos_empresas?                  @relation(fields: [id_objeto_empresa], references: [id], onUpdate: SetNull, map: "cliente_objeto_empresa")
+  softwares_competidores           softwares_competidores?            @relation(fields: [id_software_anterior], references: [id], onUpdate: SetNull, map: "software_anterior")
+
+  @@index([id_distribuidor], map: "id_distribuidor")
+  @@index([id_distribuidor], map: "id_distribuidor_2")
+  @@index([id_objeto_empresa], map: "id_objeto_empresa")
+  @@index([id_software_anterior], map: "id_software_anterior")
+  @@index([id_software_anterior], map: "id_software_anterior_2")
+  @@index([id_subdistribuidor], map: "id_subdistribuidor")
+  @@index([id_usuario], map: "id_usuario")
+  @@fulltext([nombre, nombre_empresa, id_fiscal], map: "idx_busqueda")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model clienteprecio {
+  grupo          String @db.VarChar(12)
+  empresa        String @db.VarChar(12)
+  sucursal       String @db.VarChar(12)
+  cliente        String @db.VarChar(12)
+  tipoprecio     String @db.VarChar(12)
+  estatus        String @db.Char(2)
+  predeterminado Int
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model completardatos_usuario {
+  id_completar       Int     @id @default(autoincrement())
+  facebook           String  @db.Text
+  twitter            String  @db.Text
+  instagram          String  @db.Text
+  correo_alternativo String  @db.Text
+  numero_alternativo Int
+  aviso              Int     @db.TinyInt
+  titulo1            String? @db.VarChar(70)
+  resena1            String? @db.Text
+  titulo2            String? @db.VarChar(70)
+  resena2            String? @db.Text
+  id_usuario         Int
+
+  @@index([id_usuario], map: "id_usuario")
+}
+
+model concepto_acta {
+  id_concepto Int      @id @default(autoincrement())
+  descripcion String   @db.Text
+  fecha       DateTime @db.Date
+  id_usuario  Int?
+
+  @@index([id_usuario], map: "id_usuario")
+}
+
+model condiciones_acta {
+  id_condicion Int    @id @default(autoincrement())
+  condiciones  String @db.Text
+  id_usuario   Int
+
+  @@index([id_usuario], map: "id_usuario")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model configsidebar {
+  id_config         Int       @id @default(autoincrement())
+  dataColorActive   String    @db.VarChar(7)
+  imgBackground     String    @db.VarChar(5)
+  rutaImgBackground String    @db.Text
+  dataBackground    String    @db.VarChar(7)
+  sidebarMini       String    @db.VarChar(5)
+  id_usuario        Int?
+  usuarios          usuarios? @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, map: "configsidebar_ibfk_1")
+
+  @@index([id_usuario], map: "id_usuario")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model configuracion {
+  grupo       String? @db.VarChar(12)
+  empresa     String  @db.VarChar(12)
+  sucursal    String  @db.VarChar(12)
+  opcion      String  @db.VarChar(20)
+  apuntador   String? @db.VarChar(20)
+  descripcion String? @db.VarChar(300)
+  estatus     String? @db.VarChar(2)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model deposito {
+  grupo    String? @db.VarChar(12)
+  empresa  String  @db.VarChar(12)
+  sucursal String  @db.VarChar(12)
+  deposito String  @db.VarChar(12)
+  nombre   String? @db.VarChar(200)
+  tipo     String  @db.VarChar(3)
+  estatus  String? @default("A") @db.Char(1)
+
+  @@ignore
+}
+
+model detalle_actividad {
+  id_detalle_actividad Int       @id @default(autoincrement())
+  fecha_detalle        DateTime  @default(now()) @db.Timestamp(0)
+  fecha_inicio         DateTime? @db.Timestamp(0)
+  fecha_fin            DateTime? @db.Timestamp(0)
+  id_acta              Int
+  acta_inicial         Int?
+  acta_final           Int?
+  status               Int       @db.TinyInt
+  id_actividad         Int
+  id_usuario           Int
+  id_cliente           Int
+
+  @@index([acta_inicial], map: "id_acta")
+  @@index([acta_final], map: "id_acta_final")
+  @@index([id_acta], map: "id_acta_general")
+  @@index([id_actividad], map: "id_actividad")
+  @@index([id_usuario], map: "id_asesor")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model distribuidores {
+  id_distribuidor  Int     @id @default(autoincrement())
+  nombre           String  @db.VarChar(50)
+  nombre_empresa   String  @db.VarChar(70)
+  pais             String  @db.VarChar(50)
+  ciudad           String  @db.VarChar(50)
+  prefijo          String  @db.VarChar(5)
+  numero_contacto  String  @db.VarChar(20)
+  cod_postal       String  @db.VarChar(5)
+  id_fiscal        String  @unique(map: "id_fiscal") @db.VarChar(20)
+  persona_contacto String  @db.VarChar(50)
+  direccion_fiscal String  @db.Text
+  direccion_envio  String  @db.Text
+  acreditado       Boolean @default(false)
+  id_escala        Int
+  id_usuario       Int
+
+  @@index([id_escala], map: "id_precio_escala")
+  @@index([id_usuario], map: "id_usuario")
+  @@fulltext([nombre, nombre_empresa, id_fiscal], map: "nombre")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model empresa {
+  grupo          String?   @db.VarChar(12)
+  empresa        String    @db.VarChar(12)
+  nombre         String?   @db.VarChar(200)
+  rif            String?   @db.VarChar(12)
+  diasevaluacion Int?
+  fechainicio    DateTime? @db.Date
+  fechafinal     DateTime? @db.Date
+  estatus        String?   @db.Char(1)
+
+  @@ignore
+}
+
+model escalas {
+  id_escala      Int    @id @default(autoincrement())
+  nombre         String @db.VarChar(70)
+  cantidad_desde Int
+  cantidad_hasta Int
+  id_lista       Int
+
+  @@index([id_lista], map: "id_lista")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model grupo {
+  grupo   String  @db.VarChar(12)
+  nombre  String? @db.VarChar(200)
+  estatus String? @db.Char(1)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model hybrid_coins {
+  id_hc             Int      @id @default(autoincrement())
+  serial            String   @db.VarChar(30)
+  grupo             Int
+  status            Boolean
+  tipo_documento    Int      @db.TinyInt
+  documento         String   @db.VarChar(20)
+  fecha_emision_doc DateTime @db.Date
+  created_at        DateTime @default(now()) @db.Timestamp(0)
+  updated_at        DateTime @default(now()) @db.Timestamp(0)
+  id_usuario        Int
+
+  @@index([grupo], map: "grupo_solicitud")
+  @@index([id_usuario], map: "id_usuario")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model impresoras_clientes {
+  id                 Int @id @default(autoincrement())
+  cantidad           Int
+  actualizada        Int @default(0) @db.TinyInt
+  id_impresora_marca Int
+  id_cliente         Int
+
+  @@index([id_cliente], map: "id_cliente")
+  @@index([id_impresora_marca], map: "id_impresora_marca")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model impresoras_marcas {
+  id          Int    @id @default(autoincrement())
+  descripcion String @unique(map: "descripcion") @db.VarChar(150)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model impuesto {
+  grupo       String @db.VarChar(12)
+  empresa     String @db.VarChar(12)
+  sucursal    String @db.VarChar(12)
+  impuesto    String @db.VarChar(12)
+  descripcion String @db.VarChar(200)
+  texto       String @db.VarChar(50)
+  porcentaje  Float
+  estatus     String @db.Char(2)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model insiteusuariosutils {
+  USUARIO  String    @db.Char(80)
+  CLAVE    String    @db.Char(10)
+  STATUS   Int?
+  ULTFECHA DateTime? @db.DateTime(0)
+  ULTIP    String?   @db.VarChar(30)
+
+  @@ignore
+}
+
+model instaladores {
+  id_instalador  Int      @id @default(autoincrement())
+  titulo         String   @db.VarChar(255)
+  descripcion    String   @db.Text
+  fecha_registro DateTime @db.Date
+  ruta           String   @db.VarChar(255)
+  id_producto    Int
+
+  @@index([id_producto], map: "id_producto")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ipmsoft {
+  Dominio String @db.VarChar(255)
+  IP      String @db.VarChar(20)
+  IdSec   String @db.VarChar(255)
+
+  @@ignore
+}
+
+model lista_escala {
+  id_listaescala Int    @id @default(autoincrement())
+  nombre_lista   String @db.VarChar(50)
+  escala         Int    @db.TinyInt
+  id_lista       Int
+
+  @@index([id_lista], map: "id_lista")
+}
+
+model lista_precios {
+  id_lista          Int    @id @default(autoincrement())
+  nombre            String @db.VarChar(50)
+  vigencia_actual   String @db.VarChar(12)
+  vigencia_anterior String @db.VarChar(12)
+}
+
+model lista_producto {
+  id_listaproducto Int    @id @default(autoincrement())
+  cod_producto     String @unique(map: "cod_producto") @db.VarChar(20)
+  nombre_producto  String @db.VarChar(100)
+  id               Int    @unique(map: "_id") @map("_id")
+  id_lista         Int?
+
+  @@index([id_lista], map: "id_lista")
+}
+
+model listas {
+  id_lista     Int      @id @default(autoincrement())
+  nombre_lista String   @db.VarChar(100)
+  fecha_hora   DateTime @default(now()) @db.Timestamp(0)
+}
+
+model manuales {
+  id_manual      Int      @id @default(autoincrement())
+  titulo         String   @db.VarChar(255)
+  descripcion    String   @db.Text
+  fecha_registro DateTime @db.Date
+  ruta           String   @db.VarChar(255)
+  id_producto    Int
+
+  @@index([id_producto], map: "id_producto")
+}
+
+model menu {
+  id_menu        Int      @id @default(autoincrement())
+  descripcion    String   @db.VarChar(255)
+  fecha_creacion DateTime @db.Date
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model objetos_empresas {
+  id            Int             @id @default(autoincrement())
+  nombre        String          @db.VarChar(30)
+  descripcion   String          @db.VarChar(100)
+  cliente_final cliente_final[]
+}
+
+model pais {
+  id            Int     @id @db.SmallInt
+  iso2          String  @unique(map: "iso2") @db.Char(2)
+  iso3          String  @unique(map: "iso3") @db.Char(3)
+  prefijo       Int     @db.UnsignedSmallInt
+  nombre        String  @db.VarChar(100)
+  continente    String? @db.VarChar(16)
+  subcontinente String? @db.VarChar(32)
+  iso_moneda    String? @db.VarChar(3)
+  nombre_moneda String? @db.VarChar(100)
+}
+
+model paises {
+  Codigo String @id @db.VarChar(2)
+  Pais   String @db.VarChar(100)
+}
+
+model personalizacion {
+  id_personalizacion Int      @id @default(autoincrement())
+  grupo              Int
+  id_usuario         Int
+  id_cliente         Int
+  id_asignacion      Int
+  fecha_hora         DateTime @default(now()) @db.Timestamp(0)
+  user               String?  @db.VarChar(255)
+  password           String?  @db.VarChar(255)
+  userAdmin          String?  @db.VarChar(255)
+  passwordAdmin      String?  @db.VarChar(255)
+
+  @@index([id_asignacion], map: "id_asignacion")
+}
+
+model precios_escalas {
+  id_precio_escala Int     @id @default(autoincrement())
+  monto_sin_iva    Decimal @db.Decimal(10, 0)
+  iva              Decimal @db.Decimal(10, 0)
+  monto_iva        Decimal @db.Decimal(10, 0)
+  monto_total      Decimal @db.Decimal(10, 0)
+  id_escala        Int
+
+  @@index([id_escala], map: "id_escala")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model producto {
+  grupo                 String? @db.VarChar(12)
+  empresa               String  @db.VarChar(12)
+  sucursal              String  @db.VarChar(12)
+  producto              String  @db.VarChar(30)
+  nombre                String? @db.VarChar(200)
+  existencia            Float?  @default(0.00)
+  existenciaanterior    Float?  @default(0.00)
+  costopromedio         Float?  @default(0.00)
+  costopromedioanterior Float?  @default(0.00)
+  exento                Int?    @default(0)
+  departamento          String  @db.VarChar(30)
+  clasificacion         Int     @default(1)
+  estatus               String? @default("A") @db.Char(1)
+  tipoproducto          Int
+  referencia            String? @db.VarChar(80)
+  id                    Int     @id @default(autoincrement()) @map("_id")
+  prefijo               String  @default("02") @db.VarChar(5)
+  longitud              Int     @default(8) @db.TinyInt
+
+  @@index([grupo, empresa, sucursal, producto, departamento], map: "BUSPRODUCTO")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model productodeposito {
+  grupo                 String? @db.VarChar(12)
+  empresa               String  @db.VarChar(12)
+  sucursal              String  @db.VarChar(12)
+  producto              String  @db.VarChar(30)
+  deposito              String  @db.VarChar(12)
+  existencia            Float?
+  existenciaanterior    Float?
+  costopromedio         Float?
+  costopromedioanterior Float?
+  tipo                  Int?
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model productoimpuesto {
+  grupo    String @db.VarChar(12)
+  empresa  String @db.VarChar(12)
+  sucursal String @db.VarChar(12)
+  producto String @db.VarChar(12)
+  impuesto String @db.VarChar(12)
+  estatus  String @db.Char(2)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model productoprecio {
+  grupo          String   @db.VarChar(12)
+  empresa        String   @db.VarChar(12)
+  sucursal       String   @db.VarChar(12)
+  producto       String   @db.VarChar(30)
+  tipoprecio     String   @db.VarChar(12)
+  monto          Float
+  estatus        String   @default("A") @db.VarChar(2)
+  predeterminado Int
+  montoconimp    Float?
+  montoimp       Float?
+  monto_dolares  Decimal? @db.Decimal(10, 2)
+  HC             Int?     @default(3) @db.TinyInt
+
+  @@id([grupo, empresa, sucursal, producto, tipoprecio])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model productopresentacion {
+  grupo        String @db.VarChar(12)
+  empresa      String @db.VarChar(12)
+  sucursal     String @db.VarChar(12)
+  producto     String @db.VarChar(12)
+  descripcion  String @db.VarChar(250)
+  unidadmedida String @db.VarChar(12)
+  cantidad     Float
+  estatus      Int
+
+  @@ignore
+}
+
+model productos {
+  id_producto       Int     @id @default(autoincrement())
+  nombre            String  @db.VarChar(100)
+  descripcion       String  @db.VarChar(200)
+  cod_producto      Int
+  monto_prom_escala Decimal @db.Decimal(15, 0)
+  id_lista          Int
+
+  @@index([id_lista], map: "id_lista")
+}
+
+model productotalla {
+  grupo       String @db.VarChar(12)
+  empresa     String @db.VarChar(12)
+  sucursal    String @db.VarChar(12)
+  producto    String @db.VarChar(30)
+  talla       String @db.VarChar(50)
+  descripcion String @db.VarChar(200)
+  existencia  Int    @default(0)
+  estatus     String @db.VarChar(2)
+
+  @@id([grupo, empresa, sucursal, producto, talla])
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model produtodatosadicionales {
+  grupo         String   @db.VarChar(12)
+  empresa       String   @db.VarChar(12)
+  sucursal      String   @db.VarChar(12)
+  producto      String   @db.VarChar(30)
+  cidigoescaneo String   @db.VarChar(100)
+  descripcion   String   @db.VarChar(200)
+  fechacaptura  DateTime @db.Date
+  horacaptura   DateTime @db.Time(0)
+  marca         String   @db.VarChar(100)
+  estatus       String   @db.VarChar(2)
+  usuario       String   @db.VarChar(50)
+  ubicacion     String   @db.VarChar(50)
+  nombrelocal   String   @db.VarChar(200)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model reporte_acta {
+  id_acta             Int       @id @default(autoincrement())
+  fecha_inicio        DateTime  @db.Date
+  fecha_fin           DateTime  @db.Date
+  fecha_elaboracion   DateTime  @default(now()) @db.Timestamp(0)
+  hora_inicio         String    @db.Text
+  hora_fin            String    @db.Text
+  horas_totales       String    @db.Text
+  horas_efectivas     String    @db.Text
+  viaticos            String    @db.Text
+  act_solicitadas     String    @db.Text
+  act_realizadas      String    @db.Text
+  act_pendientes      String    @db.Text
+  clasificacion       String    @db.Text
+  concepto            String    @db.Text
+  condiciones         String    @db.Text
+  correlativo         String    @unique(map: "correlativo") @db.VarChar(15)
+  id_cliente          Int
+  id_responsable      Int
+  id_distribuidor     Int?
+  id_subdistribuidor  Int?
+  tipo_atencion       Int?      @db.TinyInt
+  nroFactura          String?   @db.VarChar(50)
+  fecha_emisionF      DateTime? @db.Date
+  fecha_cobroF        DateTime? @db.Date
+  status              Boolean   @default(true)
+  descripcion_anulada String?   @db.Text
+
+  @@index([id_cliente], map: "id_cliente")
+  @@index([id_responsable], map: "id_responsable")
+  @@index([id_distribuidor, id_subdistribuidor], map: "id_subdistribuidor")
+  @@index([id_subdistribuidor], map: "id_subdistribuidor_2")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model serialesposhasta28012018 {
+  sp_serial                  String? @db.VarChar(30)
+  correoDistr                String? @db.VarChar(100)
+  diaRegistro                String? @db.VarChar(10)
+  diavencimiento             String? @db.VarChar(10)
+  diasvencido                Int?
+  sp_nombre                  String? @db.VarChar(200)
+  sp_distribuidor            String? @db.VarChar(30)
+  sp_descripciondistribuidor String? @db.VarChar(200)
+  sp_estatus                 Int?
+  sp_auto                    Int?
+  sp_descripcionproducto     String? @db.VarChar(200)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sleasing {
+  sp_serial                  String    @db.VarChar(30)
+  sp_nombre                  String    @db.VarChar(200)
+  sp_fecha                   DateTime? @db.DateTime(0)
+  sp_distribuidor            String?   @db.VarChar(30)
+  sp_descripciondistribuidor String?   @db.VarChar(200)
+  sp_producto                String?   @db.VarChar(30)
+  sp_descripcionproducto     String?   @db.VarChar(200)
+  sp_detalle                 String?   @db.VarChar(200)
+  sp_contacto                String?   @db.VarChar(200)
+  sp_email                   String?   @db.VarChar(80)
+  sp_estatus                 Int       @default(1)
+  sp_auto                    Int
+  sp_serialdsk               String?   @db.VarChar(50)
+  sp_veces                   Int       @default(1)
+  sp_ultfecha                DateTime? @db.Date
+  sp_ip                      String?   @db.VarChar(20)
+  sp_ultip                   String?   @db.VarChar(20)
+  sp_ultserialdsk            String?   @db.VarChar(50)
+  sp_id                      Int
+  sp_fechavence              DateTime  @db.Date
+  sp_dias                    Int
+  sp_tipolicencia            Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sleasingdetalle {
+  Auto             Int
+  Serial           String   @db.VarChar(50)
+  fechaoriginal    DateTime @db.Date
+  fecharenovacion  DateTime @db.Date
+  fechavencimiento DateTime @db.Date
+  dias             Int
+  idproducto       Int
+  producto         String   @db.VarChar(50)
+  distribuidor     String   @db.VarChar(50)
+  emaildist        String   @db.VarChar(100)
+  emailclte        String   @db.VarChar(100)
+  serialRenovacion String?  @db.VarChar(50)
+  tipoOperacion    Int      @default(1) @db.UnsignedInt
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model sleasinglic {
+  sp_serial                  String    @db.VarChar(30)
+  sp_nombre                  String    @db.VarChar(200)
+  sp_fecha                   DateTime? @db.DateTime(0)
+  sp_distribuidor            String?   @db.VarChar(30)
+  sp_descripciondistribuidor String?   @db.VarChar(200)
+  sp_producto                String?   @db.VarChar(30)
+  sp_descripcionproducto     String?   @db.VarChar(200)
+  sp_detalle                 String?   @db.VarChar(200)
+  sp_contacto                String?   @db.VarChar(200)
+  sp_email                   String?   @db.VarChar(80)
+  sp_estatus                 Int       @default(1)
+  sp_auto                    Int
+  sp_serialdsk               String?   @db.VarChar(50)
+  sp_veces                   Int       @default(1)
+  sp_ultfecha                DateTime? @db.Date
+  sp_ip                      String?   @db.VarChar(20)
+  sp_ultip                   String?   @db.VarChar(20)
+  sp_ultserialdsk            String?   @db.VarChar(50)
+  sp_id                      Int
+  sp_fechavence              DateTime  @db.Date
+  sp_dias                    Int
+  sp_tipolicencia            Int
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model softwares_competidores {
+  id            Int             @id @default(autoincrement())
+  descripcion   String          @db.VarChar(250)
+  cliente_final cliente_final[]
+}
+
+model solicitud {
+  id_solicitud Int      @id @default(autoincrement())
+  grupo        Int
+  id_producto  Int?
+  cod_producto String?  @db.VarChar(20)
+  producto     String   @db.VarChar(200)
+  cantidad     Int
+  descuento    String   @db.VarChar(3)
+  subtotal     Decimal  @db.Decimal(20, 2)
+  total_siniva Decimal  @db.Decimal(20, 2)
+  iva          Decimal  @db.Decimal(20, 2)
+  monto_total  Decimal  @db.Decimal(30, 2)
+  comprobante  String   @db.VarChar(200)
+  status       Boolean
+  tipo_pago    Int      @db.TinyInt
+  fecha        DateTime @db.Date
+  fecha_hora   DateTime @default(now()) @db.Timestamp(0)
+  id_usuario   Int
+
+  @@index([grupo], map: "grupo")
+  @@index([id_producto], map: "id_producto")
+  @@index([id_usuario], map: "id_usuario")
+}
+
+model solicitud_actividad {
+  id_actividad       Int                  @id @default(autoincrement())
+  titulo             String               @db.VarChar(255)
+  descripcion        String               @db.Text
+  status             Int                  @db.TinyInt
+  fecha_solicitud    DateTime             @default(now()) @db.Timestamp(0)
+  fecha_atencion     DateTime?            @db.Timestamp(0)
+  id_cliente         Int
+  id_acta            Int?
+  status_asignacion  Int?                 @db.TinyInt
+  calificacion       Boolean?
+  atencion_actividad atencion_actividad[]
+
+  @@index([id_acta], map: "id_acta")
+  @@index([id_cliente], map: "id_cliente")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model spersonalizacion {
+  sp_serial                  String    @db.VarChar(30)
+  sp_nombre                  String    @db.VarChar(200)
+  sp_fecha                   DateTime? @db.DateTime(0)
+  sp_distribuidor            String?   @db.VarChar(30)
+  sp_descripciondistribuidor String?   @db.VarChar(200)
+  sp_producto                String?   @db.VarChar(30)
+  sp_descripcionproducto     String?   @db.VarChar(200)
+  sp_detalle                 String?   @db.VarChar(200)
+  sp_contacto                String?   @db.VarChar(200)
+  sp_email                   String?   @db.VarChar(80)
+  sp_estatus                 Int       @default(1)
+  sp_auto                    Int
+  sp_serialdsk               String?   @db.VarChar(50)
+  sp_veces                   Int       @default(1)
+  sp_ultfecha                DateTime? @db.Date
+  sp_ip                      String?   @db.VarChar(20)
+  sp_ultip                   String?   @db.VarChar(20)
+  sp_ultserialdsk            String?   @db.VarChar(50)
+  sp_id                      Int
+  sp_fechavence              DateTime  @db.Date
+  sp_dias                    Int
+  sp_tipolicencia            Int
+  sp_direccion               String    @db.VarChar(255)
+  sp_telefonos               String    @db.VarChar(200)
+  sp_pais                    String    @db.VarChar(200)
+  sp_rif                     String    @db.VarChar(100)
+  sp_version                 String    @db.VarChar(150)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model spersonalizacion042016 {
+  sp_serial                  String    @db.VarChar(30)
+  sp_nombre                  String    @db.VarChar(200)
+  sp_fecha                   DateTime? @db.DateTime(0)
+  sp_distribuidor            String?   @db.VarChar(30)
+  sp_descripciondistribuidor String?   @db.VarChar(200)
+  sp_producto                String?   @db.VarChar(30)
+  sp_descripcionproducto     String?   @db.VarChar(200)
+  sp_detalle                 String?   @db.VarChar(200)
+  sp_contacto                String?   @db.VarChar(200)
+  sp_email                   String?   @db.VarChar(80)
+  sp_estatus                 Int       @default(1)
+  sp_auto                    Int
+  sp_serialdsk               String?   @db.VarChar(50)
+  sp_veces                   Int       @default(1)
+  sp_ultfecha                DateTime? @db.Date
+  sp_ip                      String?   @db.VarChar(20)
+  sp_ultip                   String?   @db.VarChar(20)
+  sp_ultserialdsk            String?   @db.VarChar(50)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model spersonalizacion2 {
+  sp_serial                  String    @db.VarChar(30)
+  sp_nombre                  String    @db.VarChar(200)
+  sp_fecha                   DateTime? @db.DateTime(0)
+  sp_distribuidor            String?   @db.VarChar(30)
+  sp_descripciondistribuidor String?   @db.VarChar(200)
+  sp_producto                String?   @db.VarChar(30)
+  sp_descripcionproducto     String?   @db.VarChar(200)
+  sp_detalle                 String?   @db.VarChar(200)
+  sp_contacto                String?   @db.VarChar(200)
+  sp_email                   String?   @db.VarChar(80)
+  sp_estatus                 Int       @default(1)
+  sp_auto                    Int
+  sp_serialdsk               String?   @db.VarChar(50)
+  sp_veces                   Int       @default(1)
+  sp_ultfecha                DateTime? @db.Date
+  sp_ip                      String?   @db.VarChar(20)
+  sp_ultip                   String?   @db.VarChar(20)
+  sp_ultserialdsk            String?   @db.VarChar(50)
+  sp_id                      Int
+  sp_fechavence              DateTime  @db.Date
+  sp_dias                    Int
+  sp_tipolicencia            Int
+  sp_direccion               String    @db.VarChar(255)
+  sp_telefonos               String    @db.VarChar(200)
+  sp_pais                    String    @db.VarChar(200)
+  sp_rif                     String    @db.VarChar(100)
+  sp_version                 String    @db.VarChar(150)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model spersonalizacionnotificacion {
+  PK_NOTIFCACIONLIC        BigInt   @db.UnsignedBigInt
+  NF_SERIAL_LIC            String   @db.VarChar(30)
+  NF_DIA_DIFF_NOTIFICACION Int
+  NF_FECHA_CREACION        DateTime @default(now()) @db.Timestamp(0)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model srelacionserial {
+  tiporelacion  Int
+  serial1       String   @db.VarChar(50)
+  serial2       String   @db.VarChar(50)
+  estatus       Int
+  vence         DateTime @db.Date
+  auto1         Int
+  auto2         Int
+  nombre        String   @db.VarChar(200)
+  machine       String   @db.VarChar(255)
+  serie         String   @db.VarChar(100)
+  grupo         String   @db.VarChar(50)
+  empresa       String   @db.VarChar(50)
+  sucursal      String   @db.VarChar(50)
+  cntmod        Int      @default(0)
+  cntchg        Int      @default(0)
+  autoincrement Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model sseriales {
+  FS_CODIGOP        String   @db.VarChar(80)
+  FS_SERIAL         String   @db.VarChar(80)
+  FS_AUTOINCREMENT  Int
+  FS_TIPOOPERACION  Int
+  FS_CLIENTE        String   @db.VarChar(80)
+  FS_DOCUMENTOVENTA String   @db.VarChar(80)
+  FS_CONSUMIDA      Boolean
+  FS_FECHAVENTA     DateTime @db.Date
+  FS_FECHAVENCE     DateTime @db.Date
+
+  @@ignore
+}
+
+model subdistribuidores {
+  id_subdistribuidor Int    @id @default(autoincrement())
+  nombre             String @db.VarChar(70)
+  nombre_empresa     String @db.VarChar(70)
+  pais               String @db.VarChar(50)
+  ciudad             String @db.VarChar(50)
+  prefijo            String @db.VarChar(50)
+  numero_contacto    String @db.VarChar(20)
+  cod_postal         Int
+  id_fiscal          String @db.VarChar(15)
+  persona_contacto   String @db.VarChar(70)
+  direccion_fiscal   String @db.VarChar(100)
+  direccion_envio    String @db.VarChar(100)
+  id_escala          Int
+  id_usuario         Int
+  id_distribuidor    Int?
+
+  @@index([id_distribuidor], map: "id_distribuidor")
+  @@index([id_escala], map: "id_escala")
+  @@index([id_usuario], map: "id_usuario")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model suc_rel_serial {
+  idRelSerial       Int
+  tiporelacion      Int      @db.TinyInt
+  tipovariable      Int      @db.TinyInt
+  fechaRelacion     DateTime @default(now()) @db.Timestamp(0)
+  serialAdmin       String   @db.VarChar(30)
+  statusSerial      String   @default("A") @db.Char(1)
+  FechaInicioSerial DateTime @db.Date
+  FechaFinalSerial  DateTime @db.Date
+  idSucursal        Int
+  statusRelacion    String   @db.Char(1)
+  idUser            Int
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model sucursal {
+  grupo     String? @db.VarChar(12)
+  empresa   String  @db.VarChar(12)
+  sucursal  String  @db.VarChar(12)
+  nombre    String? @db.VarChar(200)
+  direccion String? @db.VarChar(350)
+  telefono  String? @db.VarChar(50)
+  fax       String? @db.VarChar(50)
+  correo    String? @db.VarChar(200)
+  web       String? @db.VarChar(200)
+  principal Int?
+  estatus   String? @db.Char(1)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model tipoprecio {
+  grupo       String @db.VarChar(12)
+  empresa     String @db.VarChar(12)
+  sucursal    String @db.VarChar(12)
+  tipoprecio  String @db.VarChar(12)
+  descripcion String @db.VarChar(200)
+  estatus     String @db.Char(2)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transaccion {
+  grupo          String?   @db.VarChar(12)
+  empresa        String    @db.VarChar(12)
+  sucursal       String    @db.VarChar(12)
+  transaccion    String    @db.VarChar(12)
+  codcliente     String?   @db.VarChar(12)
+  nombrecliente  String?   @db.VarChar(200)
+  rif            String?   @db.VarChar(20)
+  tipocliente    Int?      @default(1)
+  exento         Int?      @default(0)
+  fecha          DateTime? @db.Date
+  fechaanulacion DateTime? @db.Date
+  estatus        String?   @db.Char(1)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model transacciondetalle {
+  grupo                 String? @db.VarChar(12)
+  empresa               String  @db.VarChar(12)
+  sucursal              String  @db.VarChar(12)
+  transaccion           String  @db.VarChar(12)
+  renglon               Int
+  producto              String  @db.VarChar(30)
+  sucursalorigen        String? @db.VarChar(12)
+  deposito              String? @db.VarChar(12)
+  depositoorigen        String? @db.VarChar(12)
+  cantidad              Float?
+  existencia            Float?
+  existenciaanterior    Float?
+  costopromedio         Float?
+  costopromedioanterior Float?
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transacciones {
+  id                Int      @id @default(autoincrement())
+  grupo             Int      @unique(map: "grupo-solicitud")
+  descripcion       String   @db.VarChar(150)
+  id_mp             String   @db.VarChar(50)
+  collector_id      Int
+  operation_type    String   @db.VarChar(30)
+  collection_status String?  @db.VarChar(15)
+  created_at        DateTime @default(now()) @db.Timestamp(0)
+  updated_at        DateTime @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model transacciones_hc {
+  id                  Int      @id @default(autoincrement())
+  tipo                Int      @db.TinyInt
+  grupo               Int
+  created_at          DateTime @default(now()) @db.Timestamp(0)
+  updated_at          DateTime @default(now()) @db.Timestamp(0)
+  id_hc               Int
+  id_usuario_emisor   Int
+  id_usuario_receptor Int?
+
+  @@index([grupo], map: "grupo")
+  @@index([grupo], map: "grupo_solicitud")
+  @@index([id_hc], map: "id_hc")
+  @@index([id_hc], map: "id_hc_2")
+  @@index([id_usuario_emisor], map: "id_usuario_emisor")
+  @@index([id_usuario_emisor], map: "id_usuario_emisor_2")
+  @@index([id_usuario_receptor], map: "id_usuario_receptor")
+  @@index([id_usuario_receptor], map: "id_usuario_receptor_2")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model usuario {
+  grupo    String? @db.VarChar(12)
+  empresa  String  @db.VarChar(12)
+  sucursal String  @db.VarChar(12)
+  usuario  String  @db.VarChar(30)
+  nombre   String? @db.VarChar(200)
+  perfil   Int?    @default(0)
+  estatus  String? @default("A") @db.Char(1)
+
+  @@ignore
+}
+
+model usuario_localizacion {
+  id         Int     @id @default(autoincrement())
+  pais       String  @db.VarChar(100)
+  ciudad     String  @db.VarChar(100)
+  direccion  String  @db.VarChar(255)
+  estatus    String  @db.VarChar(20)
+  lat        Decimal @db.Decimal(16, 13)
+  lng        Decimal @db.Decimal(16, 13)
+  id_usuario Int
+  nivel      Int
+
+  @@index([id_usuario], map: "fk_usuario_localizacion_usuarios")
+}
+
+model usuario_menu {
+  id                Int      @id @default(autoincrement())
+  id_usuario        Int
+  id_menu           Int
+  fecha_activacion  DateTime @db.Date
+  fecha_vencimiento DateTime @db.Date
+
+  @@index([id_menu], map: "id_munu")
+  @@index([id_usuario], map: "id_usuario")
+}
+
+model usuario_token {
+  id_usuario_token    Int                  @id @default(autoincrement())
+  token               String               @db.VarChar(255)
+  estado              usuario_token_estado
+  fecha_creacion      DateTime             @default(now()) @db.DateTime(0)
+  fecha_actualizacion DateTime?            @db.DateTime(0)
+  fecha_vencimiento   DateTime             @db.DateTime(0)
+  id_usuario          Int
+
+  @@index([id_usuario], map: "fk_usuario_token_usuario")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model usuarioconfiguracion {
+  grupo    String? @db.VarChar(12)
+  empresa  String  @db.VarChar(12)
+  sucursal String  @db.VarChar(12)
+  usuario  String  @db.VarChar(30)
+  opcion   String  @db.VarChar(20)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model usuarioperfil {
+  grupo    String? @db.VarChar(12)
+  empresa  String  @db.VarChar(12)
+  sucursal String  @db.VarChar(12)
+  usuario  String  @db.VarChar(30)
+  perfil   String  @db.VarChar(30)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model usuarios {
+  id_usuario        Int             @id @default(autoincrement())
+  nombre            String          @db.VarChar(70)
+  nombre_emp        String          @db.VarChar(70)
+  correo            String          @db.VarChar(70)
+  password          String?         @db.VarChar(20)
+  password_hash     String?         @db.VarChar(255)
+  intentos_login    Int             @default(0)
+  fecha_bloqueo     DateTime?       @db.DateTime(0)
+  nivel             Boolean
+  status            Boolean
+  img_usuario       String          @db.VarChar(100)
+  img_empresa       String          @db.VarChar(100)
+  rutaPathEmpresa   String          @db.Text
+  fecha_registro    DateTime        @db.Date
+  tipo_moneda       Int?            @db.TinyInt
+  tipo_usuario      Int?            @db.TinyInt
+  fecha_activacion  DateTime?       @db.Date
+  fecha_vencimiento DateTime?       @db.Date
+  lat               Decimal?        @db.Decimal(16, 13)
+  lng               Decimal?        @db.Decimal(16, 13)
+  configsidebar     configsidebar[]
+}
+
+enum usuario_token_estado {
+  CREADO
+  USADO
+  REVOCADO
+}
