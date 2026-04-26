@@ -8,7 +8,7 @@ import authRoutes from '@modules/auth/presentation/auth.routes';
 import { NOT_FOUND_ERROR_MESSAGE } from '@shared/constants/error-messages';
 import '@modules/auth/docs/auth.docs';
 import swaggerUi from 'swagger-ui-express';
-import { generateOpenAPIDocument } from '@shared/config/openapi.config';
+import { generateOpenAPIDocument } from '@config/openapi.config';
 
 const app = express();
 

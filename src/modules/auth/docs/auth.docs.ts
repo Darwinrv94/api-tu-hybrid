@@ -1,4 +1,4 @@
-import { registry } from '@shared/config/openapi.config';
+import { registry } from '@config/openapi.config';
 import { LoginDTO } from '../application/dto/login.dto';
 
 registry.registerPath({
