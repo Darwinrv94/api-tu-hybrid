@@ -12,10 +12,10 @@ export default [
       semi: ['error', 'always'],
       eqeqeq: ['error', 'always'],
       curly: ['error', 'all'],
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
         {
-          "argsIgnorePattern": "^_"
+          argsIgnorePattern: '^_'
         }
       ],
     },
