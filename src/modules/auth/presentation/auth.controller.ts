@@ -16,7 +16,8 @@ export class AuthController extends BaseController {
     if (result.isFailure) {
       if (
         result.error === LoginResult.INVALID_CREDENTIALS ||
-        result.error === LoginResult.USER_INACTIVE
+        result.error === LoginResult.USER_INACTIVE ||
+        result.error === LoginResult.BLOCKED_LOGIN
       ) {
         return this.unauthorized(res, result.error!);
       }

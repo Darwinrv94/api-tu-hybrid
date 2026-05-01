@@ -1,14 +1,14 @@
 import { AuthRepository } from '@modules/auth/domain/auth.repository';
 import prisma from '@config/prisma';
 import { User } from '@modules/users/domain/user.entity';
-import { UserStatus } from '@modules/users/domain/enums/user-status.enum';
-import { Result } from '@shared/core/result';
+import { LoginSelect, loginSelect } from './prisma/login.prisma-select';
 import { env } from '@config/env';
 
 export class AuthRepositoryImpl implements AuthRepository {
   async findByEmail(email: string): Promise<User | null> {
-    const user = await prisma.usuarios.findFirst({
+    const user: LoginSelect | null = await prisma.usuarios.findFirst({
       where: { correo: email },
+      select: loginSelect,
     });
 
     if (!user) {
@@ -26,33 +26,49 @@ export class AuthRepositoryImpl implements AuthRepository {
     };
   }
 
-  async ensureUserCanAuthenticate(user: User): Promise<Result<UserStatus>> {
+  async incrementFailedAttempts(userId: number): Promise<number> {
     const maxAttempts = Number(env.INTENTOS_LOGIN);
-    const blockMinutes = Number(env.TIEMPO_BLOQUEO_LOGIN);
 
-    if (user.status !== UserStatus.ACTIVE) {
-      return Result.ok(UserStatus.INACTIVE);
+    const updated = await prisma.usuarios.updateMany({
+      where: {
+        id_usuario: userId,
+        intentos_login: { lt: maxAttempts },
+      },
+      data: {
+        intentos_login: { increment: 1 },
+      },
+    });
+
+    if (!updated.count) {
+      return maxAttempts;
     }
 
-    if (user.failedLoginAttempts >= maxAttempts) {
-      const bloqueo = user.loginBlockDate;
+    const user = await prisma.usuarios.findUnique({
+      where: { id_usuario: userId },
+      select: { intentos_login: true },
+    });
 
-      if (!bloqueo) {
-        return Result.ok(UserStatus.BLOCKED);
-      }
-
-      const ahora = new Date();
-
-      const minutosTranscurridos = (ahora.getTime() - bloqueo.getTime()) / 1000 / 60;
-
-      if (minutosTranscurridos < blockMinutes) {
-        return Result.ok(UserStatus.BLOCKED);
-      }
-
-      // bloqueo expiró → reset automático
-      // await this.resetFailedAttempts(user.id);
+    if (!user) {
+      return 0;
     }
 
-    return Result.ok(UserStatus.ACTIVE);
+    if (user.intentos_login === maxAttempts) {
+      await prisma.usuarios.update({
+        where: { id_usuario: userId },
+        data: { fecha_bloqueo: new Date() },
+      });
+    }
+
+    return user.intentos_login;
+  }
+
+  async resetFailedAttempts(userId: number): Promise<void> {
+    await prisma.usuarios.update({
+      where: { id_usuario: userId },
+      data: {
+        intentos_login: 0,
+        fecha_bloqueo: null,
+      },
+    });
   }
 }
