@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  //url      = env("DATABASE_URL")
 }
 
 model archivo_licencia {
@@ -1181,8 +1181,8 @@ model usuarios {
   password_hash     String?         @db.VarChar(255)
   intentos_login    Int             @default(0)
   fecha_bloqueo     DateTime?       @db.DateTime(0)
-  nivel             Int             @db.TinyInt
-  status            Int             @db.TinyInt
+  nivel             Int
+  status            Int
   img_usuario       String          @db.VarChar(100)
   img_empresa       String          @db.VarChar(100)
   rutaPathEmpresa   String          @db.Text
@@ -1194,10 +1194,37 @@ model usuarios {
   lat               Decimal?        @db.Decimal(16, 13)
   lng               Decimal?        @db.Decimal(16, 13)
   configsidebar     configsidebar[]
+  refresh_token     refresh_token[]
 }
 
 enum usuario_token_estado {
   CREADO
   USADO
   REVOCADO
+}
+
+model refresh_token {
+  id           String   @id @default(uuid())
+  userId       Int
+  tokenHash    String
+  status       RefreshTokenStatus @default(ACTIVE)
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  ip           String?
+  userAgent    String?
+  deviceId     String?
+
+  user         usuarios @relation(fields: [userId], references: [id_usuario])
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([userId, status])
+}
+
+enum RefreshTokenStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
 }

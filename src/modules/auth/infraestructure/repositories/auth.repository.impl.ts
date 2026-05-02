@@ -1,8 +1,8 @@
-import { AuthRepository } from '@modules/auth/domain/auth.repository';
+import { AuthRepository } from '@modules/auth/domain/repositories/auth.repository';
 import prisma from '@config/prisma';
 import { User } from '@modules/users/domain/user.entity';
-import { LoginSelect, loginSelect } from './prisma/login.prisma-select';
 import { env } from '@config/env';
+import { loginSelect, LoginSelect } from '../prisma/login.prisma-select';
 
 export class AuthRepositoryImpl implements AuthRepository {
   async findByEmail(email: string): Promise<User | null> {

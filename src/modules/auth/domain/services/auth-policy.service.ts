@@ -3,7 +3,7 @@ import { User } from '@modules/users/domain/user.entity';
 import { Result } from '@shared/core/result';
 import { env } from '@config/env';
 import { inject, injectable } from 'tsyringe';
-import { AuthRepository } from '../auth.repository';
+import { AuthRepository } from '../repositories/auth.repository';
 
 @injectable()
 export class AuthPolicyService {
@@ -15,6 +15,14 @@ export class AuthPolicyService {
   async ensureUserCanAuthenticate(user: User): Promise<Result<UserStatus>> {
     const maxAttempts = Number(env.INTENTOS_LOGIN);
     const blockMinutes = Number(env.TIEMPO_BLOQUEO_LOGIN);
+
+    if (user.status === UserStatus.INACTIVE) {
+      return Result.ok(UserStatus.INACTIVE);
+    }
+
+    if (user.status === UserStatus.BLOCKED) {
+      return Result.ok(UserStatus.BLOCKED);
+    }
 
     if (user.status !== UserStatus.ACTIVE) {
       return Result.ok(UserStatus.INACTIVE);

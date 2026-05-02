@@ -238,6 +238,54 @@ Abrir Prisma Studio:
 npx prisma studio
 ```
 
+# Marcar migración como aplicada
+
+```
+npx prisma migrate resolve --applied <name_migration>
+```
+
+# Generar migración desde una base de datos existente (Prisma)
+
+## 1. Crear carpeta de migraciones
+
+Si no existe, crear la carpeta:
+
+```
+mkdir prisma/migrations
+```
+
+## 2. Generar el archivo de migración
+
+Ejecutar:
+
+```
+npx prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/add_refresh_token/migration.sql
+```
+
+Este comando **solo genera el script SQL** y no modifica la base de datos.
+
+## 3. Registrar la migración como aplicada (sin afectar datos)
+
+Si la base de datos ya contiene los cambios:
+
+```
+npx prisma migrate resolve --applied <name_migration>
+```
+
+Esto evita que Prisma intente ejecutar nuevamente la migración.
+
+## 4. Aplicar migraciones pendientes (solo si corresponde)
+
+```
+npx prisma migrate deploy
+```
+
+Usar este paso únicamente cuando existan migraciones nuevas que sí deban ejecutarse en la base de datos.
+
+```
+npx prisma generate
+```
+
 ---
 
 # 📄 Ejemplo datasource
