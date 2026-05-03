@@ -38,6 +38,6 @@ export class AuthController extends BaseController {
       }
     }
 
-    return this.ok(res, result.value);
+    return this.ok(res, 'Login exitoso', result.value);
   };
 }

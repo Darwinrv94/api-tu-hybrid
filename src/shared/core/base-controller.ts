@@ -8,16 +8,18 @@ import {
 } from '@shared/constants/error-messages';
 
 export abstract class BaseController {
-  protected ok<T>(res: Response, data: T) {
+  protected ok<T>(res: Response, message: string, data: T) {
     return res.status(200).json({
       success: true,
+      message,
       data,
     });
   }
 
-  protected created<T>(res: Response, data: T) {
+  protected created<T>(res: Response, message: string, data: T) {
     return res.status(201).json({
       success: true,
+      message,
       data,
     });
   }

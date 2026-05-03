@@ -3,9 +3,21 @@ import { HttpError } from '@shared/core/http-error';
 import { Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
 
-export const errorHandler = (err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  if (err instanceof HttpError) {
-    return res.status(err.statusCode).json({
+export const errorHandler = (err: Error, req: Request, res: Response, _next: NextFunction) => {
+  const isHttpError = err instanceof HttpError;
+  const statusCode = isHttpError ? err.statusCode : 500;
+
+  req.log[isHttpError ? 'warn' : 'error']({
+    err,
+    statusCode,
+    type: err.constructor.name,
+    body: req.body,
+    params: req.params,
+    query: req.query,
+  });
+
+  if (isHttpError) {
+    return res.status(statusCode).json({
       success: false,
       message: err.message,
     });
@@ -25,6 +37,6 @@ export const errorHandler = (err: Error, _req: Request, res: Response, _next: Ne
 
   res.status(500).json({
     success: false,
-    message: err.message || INTERNAL_SERVER_ERROR_MESSAGE,
+    message: INTERNAL_SERVER_ERROR_MESSAGE,
   });
 };
