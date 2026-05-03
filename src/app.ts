@@ -16,12 +16,10 @@ const app = express();
 const apiRouter = express.Router();
 
 app.use(helmet());
-
-app.use(requestIdMiddleware);
-
 app.use(cors());
 app.use(express.json());
 
+app.use(requestIdMiddleware);
 app.use(httpLogger);
 
 if (env.NODE_ENV !== 'production') {
